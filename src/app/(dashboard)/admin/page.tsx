@@ -5,7 +5,7 @@ import { adminService, Profile } from '@/services/admin-service'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
-import { Shield, ShieldAlert, ShieldCheck, UserPlus } from 'lucide-react'
+import { Shield, ShieldAlert, ShieldCheck, UserPlus, Edit } from 'lucide-react'
 import { useState } from 'react'
 import { createAdminUser } from '@/app/actions/admin-actions'
 
