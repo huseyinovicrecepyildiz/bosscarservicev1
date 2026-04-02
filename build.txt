@@ -5,48 +5,51 @@
 Ôû▓ Next.js 16.2.2 (Turbopack)
 - Environments: .env.local
 
-node.exe : ÔÜá The "middleware
-" file convention is deprecate
-d. Please use "proxy" instead.
- Learn more: https://nextjs.or
-g/docs/messages/middleware-to-
-proxy
+node.exe : ÔÜá The "middleware" f
+ile convention is deprecated. Ple
+ase use "proxy" instead. Learn mo
+re: https://nextjs.org/docs/messa
+ges/middleware-to-proxy
 At line:1 char:1
-+ & "C:\Program Files\nodejs/n
-ode.exe" "C:\Users\husey\AppDa
-ta\Roaming\ ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~
-    + CategoryInfo          : 
-No    tSpecified: (ÔÜá The "mi
-ddle    ...leware-to-proxy:Str
-ing) [    ], RemoteException
-    + FullyQualifiedErrorId : 
-Na    tiveCommandError
++ & "C:\Program Files\nodejs/node
+.exe" "C:\Users\husey\AppData\Roa
+ming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo          : No 
+   tSpecified: (ÔÜá The "middle  
+  ...leware-to-proxy:String) [   
+ ], RemoteException
+    + FullyQualifiedErrorId : Na 
+   tiveCommandError
  
   Creating an optimized production build ...
-Ô£ô Compiled successfully in 5.3s
+Ô£ô Compiled successfully in 5.4s
   Running TypeScript ...
-  Finished TypeScript in 5.9s ...
-  Collecting page data using 9 workers ...
-  Generating static pages using 9 workers (0/8) ...
-  Generating static pages using 9 workers (2/8) 
-  Generating static pages using 9 workers (4/8) 
-  Generating static pages using 9 workers (6/8) 
-Ô£ô Generating static pages using 9 workers (8/8) in 952ms
-  Finalizing page optimization ...
+Failed to type check.
 
-Route (app)
-Ôöî Ôùï /
-Ôö£ Ôùï /_not-found
-Ôö£ Ôùï /admin
-Ôö£ Ôùï /customers
-Ôö£ Ôùï /expenses
-Ôöö Ôùï /login
+./src/app/actions/admin-actions.t
+s:22:29
+Type error: Property 'get' does n
+ot exist on type 'Promise<Readonl
+yRequestCookies>'.
 
-
-ãÆ Proxy (Middleware)
-
-Ôùï  (Static)  prerendered as static content
-
+  [90m20 |[0m   [90m// Apply c
+urrent auth to pass security rule
+s[0m
+  [90m21 |[0m   [36mconst[0m 
+cookieStore = cookies()
+[31m[1m>[0m [90m22 |[0m   [
+36mconst[0m token = cookieStore.
+get([32m'pb_auth'[0m)?.value
+  [90m   |[0m                  
+           [31m[1m^[0m
+  [90m23 |[0m   [36mif[0m (to
+ken) pb.authStore.loadFromCookie(
+[32m`pb_auth=[0m${token[32m}`
+[0m)
+  [90m24 |[0m
+  [90m25 |[0m   [36mtry[0m {
+Next.js build worker exited with 
+code: 1 and signal: null
