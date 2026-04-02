@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, Users, CreditCard, Settings, LogOut, Menu, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
-import { createClient } from '@/lib/supabase/client'
+import { pb } from '@/lib/pocketbase'
 
 const menuItems = [
   { icon: <span className="text-xl leading-none">📊</span>, label: 'Dashboard', href: '/' },
@@ -17,33 +17,22 @@ const menuItems = [
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [user, setUser] = useState<{ id: string, name: string, role: string } | null>(null)
 
   useEffect(() => {
-    async function loadUser() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        // Find profile role
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single()
-
+    if (pb.authStore.isValid && pb.authStore.model) {
         setUser({
-          id: session.user.id,
-          name: session.user.email?.replace('@bosscar.local', '') || 'Personel',
-          role: profile?.role || 'personel'
+          id: pb.authStore.model.id,
+          name: pb.authStore.model.email?.replace('@bosscar.local', '') || 'Personel',
+          role: pb.authStore.model.role || 'personel'
         })
-      }
     }
-    loadUser()
   }, [])
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
+  const handleLogout = () => {
+    pb.authStore.clear()
+    document.cookie = 'pb_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
     router.push('/login')
     router.refresh()
   }

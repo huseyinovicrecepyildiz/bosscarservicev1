@@ -1,17 +1,7 @@
 'use server'
 
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-)
+import PocketBase from 'pocketbase'
+import { cookies } from 'next/headers'
 
 export async function createAdminUser(formData: FormData) {
   const userId = formData.get('userId') as string
@@ -22,32 +12,23 @@ export async function createAdminUser(formData: FormData) {
     return { error: 'Geçersiz ID veya 6 karakterden kısa şifre.' }
   }
 
-  // Generate a dummy email and format
   const dummyEmail = `${userId.trim().toLowerCase()}@bosscar.local`
 
+  const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090'
+  const pb = new PocketBase(pbUrl)
+  
+  // Apply current auth to pass security rules
+  const cookieStore = cookies()
+  const token = cookieStore.get('pb_auth')?.value
+  if (token) pb.authStore.loadFromCookie(`pb_auth=${token}`)
+
   try {
-    // 1. Create Identity using Admin API
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    await pb.collection('users').create({
       email: dummyEmail,
       password: password,
-      email_confirm: true,
-      user_metadata: { local_id: userId }
+      passwordConfirm: password,
+      role: role,
     })
-
-    if (authError) throw authError
-
-    // 2. Wait a moment for the PostgreSQL trigger to finish executing (which inserts into `profiles`)
-    // Because it's asynchronous on the DB level sometimes, though usually synchronous in the transaction.
-    // 3. Force update their role in profiles table to match the selected role.
-    const { error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .update({ role: role })
-      .eq('id', authData.user.id)
-
-    if (profileError) {
-      console.error('Profile update issue:', profileError)
-      // Non-fatal if the trigger successfully set it to 'personel' at least.
-    }
 
     return { success: true }
   } catch (error: any) {

@@ -1,6 +1,4 @@
-import { createClient } from '@/lib/supabase/client'
-
-const supabase = createClient()
+import { pb } from '@/lib/pocketbase'
 
 export type Profile = {
   id: string
@@ -9,23 +7,21 @@ export type Profile = {
   created_at: string
 }
 
+const mapRecord = (r: any): Profile => ({
+  ...r,
+  created_at: r.created,
+})
+
 export const adminService = {
   getProfiles: async () => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false })
-    if (error) throw error
-    return data as Profile[]
+    const records = await pb.collection('users').getFullList({
+      sort: '-created',
+    })
+    return records.map(mapRecord) as Profile[]
   },
 
   updateProfileRole: async (id: string, role: Profile['role']) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .update({ role })
-      .eq('id', id)
-      .select()
-    if (error) throw error
-    return data[0] as Profile
+    const record = await pb.collection('users').update(id, { role })
+    return mapRecord(record) as Profile
   },
 }

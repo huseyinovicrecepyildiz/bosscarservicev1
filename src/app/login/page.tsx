@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { pb } from '@/lib/pocketbase'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
@@ -11,7 +11,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,20 +23,19 @@ export default function LoginPage() {
 
     setLoading(true)
     
-    // We append the artificial domain to match our background logic
     const dummyEmail = `${id.trim().toLowerCase()}@bosscar.local`
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: dummyEmail,
-      password: password,
-    })
-
-    if (signInError) {
-      setError('Hatalı ID veya Şifre.')
-      setLoading(false)
-    } else {
+    try {
+      await pb.collection('users').authWithPassword(dummyEmail, password)
+      
+      // Save token in cookie so Middleware can check it
+      document.cookie = pb.authStore.exportToCookie({ httpOnly: false, secure: false })
+      
       router.push('/')
       router.refresh()
+    } catch (err: any) {
+      setError('Hatalı ID veya Şifre.')
+      setLoading(false)
     }
   }
 

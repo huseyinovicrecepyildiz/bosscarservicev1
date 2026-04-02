@@ -1,6 +1,4 @@
-import { createClient } from '@/lib/supabase/client'
-
-const supabase = createClient()
+import { pb } from '@/lib/pocketbase'
 
 export type ExpenseCategory = 'Maaş' | 'Fatura' | 'Kira' | 'Sarf Malzeme' | 'Diğer'
 
@@ -14,45 +12,41 @@ export type Expense = {
   created_by: string | null
 }
 
+const mapRecord = (r: any): Expense => ({
+  ...r,
+  created_at: r.created,
+})
+
 export const expenseService = {
   getExpenses: async (startDate?: string, endDate?: string) => {
-    let query = supabase
-      .from('expenses')
-      .select('*')
-      .order('date', { ascending: false })
-    
-    if (startDate) query = query.gte('date', startDate)
-    if (endDate) query = query.lte('date', endDate)
+    let filter = ''
+    if (startDate && endDate) {
+        filter = `date >= "${startDate}" && date <= "${endDate}"`
+    } else if (startDate) {
+        filter = `date >= "${startDate}"`
+    } else if (endDate) {
+        filter = `date <= "${endDate}"`
+    }
 
-    const { data, error } = await query
-    if (error) throw error
-    return data as Expense[]
+    const records = await pb.collection('expenses').getFullList({
+      sort: '-date',
+      filter: filter
+    })
+    
+    return records.map(mapRecord) as Expense[]
   },
 
   createExpense: async (expense: Omit<Expense, 'id' | 'created_at' | 'created_by'>) => {
-    const { data, error } = await supabase
-      .from('expenses')
-      .insert([expense])
-      .select()
-    if (error) throw error
-    return data[0] as Expense
+    const record = await pb.collection('expenses').create(expense)
+    return mapRecord(record) as Expense
   },
 
   updateExpense: async (id: string, expense: Partial<Expense>) => {
-    const { data, error } = await supabase
-      .from('expenses')
-      .update(expense)
-      .eq('id', id)
-      .select()
-    if (error) throw error
-    return data[0] as Expense
+    const record = await pb.collection('expenses').update(id, expense)
+    return mapRecord(record) as Expense
   },
 
   deleteExpense: async (id: string) => {
-    const { error } = await supabase
-      .from('expenses')
-      .delete()
-      .eq('id', id)
-    if (error) throw error
+    await pb.collection('expenses').delete(id)
   }
 }

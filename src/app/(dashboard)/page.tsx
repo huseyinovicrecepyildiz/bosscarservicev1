@@ -5,7 +5,7 @@ import { FinancialChart } from '@/components/dashboard/financial-chart'
 import { useQuery } from '@tanstack/react-query'
 import { customerService } from '@/services/customer-service'
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { pb } from '@/lib/pocketbase'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AlertCircle, Clock } from 'lucide-react'
 
@@ -15,18 +15,13 @@ export default function DashboardPage() {
   const [dateFilter, setDateFilter] = useState<DateFilter>('month')
   const [username, setUsername] = useState('Yükleniyor...')
   const [isReceivablesOpen, setIsReceivablesOpen] = useState(false)
-  
-  const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      const email = data.session?.user?.email;
-      if (email) {
-        setUsername(email.replace('@bosscar.local', ''));
-      } else {
-        setUsername('Personel');
-      }
-    });
+    if (pb.authStore.isValid && pb.authStore.model) {
+      setUsername(pb.authStore.model.email?.replace('@bosscar.local', '') || 'Personel');
+    } else {
+      setUsername('Personel');
+    }
   }, [])
 
   const { data: allCustomers } = useQuery({
