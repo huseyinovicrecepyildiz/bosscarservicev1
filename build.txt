@@ -1,0 +1,52 @@
+﻿
+> bosscar-service@0.1.0 build
+> next build
+
+Ôû▓ Next.js 16.2.2 (Turbopack)
+- Environments: .env.local
+
+node.exe : ÔÜá The "middleware
+" file convention is deprecate
+d. Please use "proxy" instead.
+ Learn more: https://nextjs.or
+g/docs/messages/middleware-to-
+proxy
+At line:1 char:1
++ & "C:\Program Files\nodejs/n
+ode.exe" "C:\Users\husey\AppDa
+ta\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo          : 
+No    tSpecified: (ÔÜá The "mi
+ddle    ...leware-to-proxy:Str
+ing) [    ], RemoteException
+    + FullyQualifiedErrorId : 
+Na    tiveCommandError
+ 
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 5.3s
+  Running TypeScript ...
+  Finished TypeScript in 5.9s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/8) ...
+  Generating static pages using 9 workers (2/8) 
+  Generating static pages using 9 workers (4/8) 
+  Generating static pages using 9 workers (6/8) 
+Ô£ô Generating static pages using 9 workers (8/8) in 952ms
+  Finalizing page optimization ...
+
+Route (app)
+Ôöî Ôùï /
+Ôö£ Ôùï /_not-found
+Ôö£ Ôùï /admin
+Ôö£ Ôùï /customers
+Ôö£ Ôùï /expenses
+Ôöö Ôùï /login
+
+
+ãÆ Proxy (Middleware)
+
+Ôùï  (Static)  prerendered as static content
+
