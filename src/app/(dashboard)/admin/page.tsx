@@ -15,23 +15,47 @@ export default function AdminPage() {
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Edit User State
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null)
+  const [editPassword, setEditPassword] = useState('')
+  const [editRole, setEditRole] = useState<Profile['role']>('personel')
+
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['profiles'],
     queryFn: adminService.getProfiles,
   })
 
-  // Ensure role changes are optimistic
-  const mutation = useMutation({
-    mutationFn: ({ id, role }: { id: string; role: Profile['role'] }) =>
-      adminService.updateProfileRole(id, role),
+  const updateMutation = useMutation({
+    mutationFn: ({ id, role, password }: { id: string; role: Profile['role']; password?: string }) =>
+      adminService.updateProfile(id, { role, password }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profiles'] })
-      toast({ title: 'Başarılı', description: 'Kullanıcı rolü güncellendi.' })
+      toast({ title: 'Başarılı', description: 'Kullanıcı bilgileri güncellendi.' })
+      setIsEditOpen(false)
+      setEditPassword('')
     },
     onError: (error: any) => {
       toast({ title: 'Hata', description: error.message, variant: 'destructive' })
     },
   })
+
+  const handleEditClick = (profile: Profile) => {
+    setEditingProfile(profile)
+    setEditRole(profile.role)
+    setEditPassword('')
+    setIsEditOpen(true)
+  }
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingProfile) return
+    updateMutation.mutate({ 
+      id: editingProfile.id, 
+      role: editRole, 
+      password: editPassword || undefined 
+    })
+  }
 
   return (
     <div className="animate-fade-in max-w-[1200px] mx-auto space-y-6">
@@ -49,7 +73,7 @@ export default function AdminPage() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[400px] bg-slate-900 border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-slate-100">Manuel Olarak Başkasını Ekle</DialogTitle>
+              <DialogTitle className="text-slate-100">Yeni Personel Ekle</DialogTitle>
             </DialogHeader>
             <form 
               action={async (formData) => {
@@ -92,7 +116,7 @@ export default function AdminPage() {
               </div>
               <div>
                 <label className="text-sm text-slate-300 font-medium block mb-1">Yetki Rolü</label>
-                <select name="role" required className="input-base w-full">
+                <select name="role" required className="input-base w-full bg-slate-900 text-slate-100 border-slate-700">
                   <option value="personel">Personel (Sadece Müşteri Görebilir)</option>
                   <option value="yetkili">Yetkili (Gider & Müşteri Görür)</option>
                   <option value="admin">Admin (Tam Yetki)</option>
@@ -117,8 +141,8 @@ export default function AdminPage() {
               <tr>
                 <th>Giriş ID (Sistem Maili)</th>
                 <th>Şu Anki Rol</th>
-                <th>Rolü Değiştir</th>
                 <th>Kayıt Tarihi</th>
+                <th className="text-right">İşlemler</th>
               </tr>
             </thead>
             <tbody>
@@ -148,23 +172,17 @@ export default function AdminPage() {
                         </span>
                       </div>
                     </td>
-                    <td>
-                      <Select
-                        defaultValue={profile.role}
-                        onValueChange={(val) => mutation.mutate({ id: profile.id, role: val as Profile['role'] })}
-                      >
-                        <SelectTrigger className="w-[180px] bg-slate-900 border-slate-700 text-slate-300">
-                          <SelectValue placeholder="Rol Seçin" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
-                          <SelectItem value="admin" className="focus:bg-slate-800 focus:text-slate-200">Admin (Tam Yetki)</SelectItem>
-                          <SelectItem value="yetkili" className="focus:bg-slate-800 focus:text-slate-200">Yetkili (Gider & Müşteri)</SelectItem>
-                          <SelectItem value="personel" className="focus:bg-slate-800 focus:text-slate-200">Personel (Sadece Müşteri)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
                     <td className="text-slate-400">
                       {new Date(profile.created_at).toLocaleDateString('tr-TR')}
+                    </td>
+                    <td className="text-right">
+                      <button 
+                         onClick={() => handleEditClick(profile)}
+                         className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                         title="Kullanıcıyı Düzenle"
+                      >
+                         <Edit className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 )
@@ -173,6 +191,55 @@ export default function AdminPage() {
           </table>
         </div>
       </div>
+
+      {/* Edit User Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="sm:max-w-[400px] bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-slate-100 flex items-center gap-2">
+              <Edit className="w-5 h-5 text-amber-500" /> Kullanıcıyı Düzenle
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdate} className="space-y-4 mt-4">
+            <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+               <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">DÜZENLENEN KULLANICI</p>
+               <p className="font-mono text-amber-500 font-bold">{editingProfile?.email}</p>
+            </div>
+
+            <div>
+              <label className="text-sm text-slate-300 font-medium block mb-1">Yeni Şifre (Değişmeyecekse Boş Bırakın)</label>
+              <input 
+                type="text" 
+                placeholder="En az 6 karakter" 
+                className="input-base w-full"
+                value={editPassword}
+                onChange={(e) => setEditPassword(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-slate-300 font-medium block mb-1">Yeni Rol</label>
+              <select 
+                className="input-base w-full bg-slate-900 text-slate-100 border-slate-700"
+                value={editRole}
+                onChange={(e) => setEditRole(e.target.value as Profile['role'])}
+              >
+                <option value="admin">Admin (Tam Yetki)</option>
+                <option value="yetkili">Yetkili (Gider & Müşteri)</option>
+                <option value="personel">Personel (Sadece Müşteri)</option>
+              </select>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={updateMutation.isPending}
+              className="btn-primary w-full justify-center mt-6 disabled:opacity-50"
+            >
+              {updateMutation.isPending ? 'Güncelleniyor...' : 'Değişiklikleri Kaydet'}
+            </button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

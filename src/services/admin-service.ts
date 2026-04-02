@@ -20,8 +20,12 @@ export const adminService = {
     return records.map(mapRecord) as Profile[]
   },
 
-  updateProfileRole: async (id: string, role: Profile['role']) => {
-    const record = await pb.collection('users').update(id, { role })
+  updateProfile: async (id: string, data: { role?: Profile['role'], password?: string }) => {
+    const updateData: any = { ...data }
+    if (data.password) {
+      updateData.passwordConfirm = data.password
+    }
+    const record = await pb.collection('users').update(id, updateData)
     return mapRecord(record) as Profile
   },
 }

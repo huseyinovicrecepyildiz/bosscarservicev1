@@ -28,6 +28,7 @@ export async function createAdminUser(formData: FormData) {
       password: password,
       passwordConfirm: password,
       role: role,
+      verified: true,
     })
 
     return { success: true }
