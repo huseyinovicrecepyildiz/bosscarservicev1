@@ -18,7 +18,7 @@ export async function createAdminUser(formData: FormData) {
   const pb = new PocketBase(pbUrl)
   
   // Apply current auth to pass security rules
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const token = cookieStore.get('pb_auth')?.value
   if (token) pb.authStore.loadFromCookie(`pb_auth=${token}`)
 
